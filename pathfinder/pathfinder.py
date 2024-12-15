@@ -1,4 +1,6 @@
 from pathfinder.node import Node
+from typing import List
+
 
 class Pathfinder:
     def __init__(self, map_array, start_pos, end_pos):
@@ -9,56 +11,54 @@ class Pathfinder:
 
     def get_node(self, pos):
         if pos not in self._nodes:
-            self._nodes[pos] = Node(pos,
-                                    self._start_pos,
-                                    self._end_pos,
-                                    self._map_array)
+            self._nodes[pos] = Node(pos, self._map_array)
         return self._nodes[pos]
 
     def plan(self, step_callback=None):
-        start_node = self.get_node(self._start_pos)
-        end_node = self.get_node(self._end_pos)
-        to_search = [start_node]
-        processed = []
+        start_node: Node = self.get_node(self._start_pos)
+        end_node: Node = self.get_node(self._end_pos)
+        start_node.g = 0
+        start_node.h = start_node.get_distance(end_node)
+        to_search: List[Node] = [start_node]
+        processed: List[Node] = []
 
         while len(to_search) > 0:
-            current = to_search[0]
+            current: Node = to_search[0]
 
             for node in to_search:
-                if node.F < current.F or node.F == current.F and node.H < current.H:
+                if node.f < current.f or node.f == current.f and node.h < current.h:
                     current = node
+
+            if current.pos == end_node.pos:
+                current_path_tile: Node = end_node
+                path = []
+                while current_path_tile.pos != start_node.pos:
+                    path.append(current_path_tile)
+                    current_path_tile = current_path_tile.connection
+                return path
 
             processed.append(current)
             to_search.remove(current)
 
-            if current.get_pos() == end_node.get_pos():
-                current_path_tile = end_node
-                path = []
-                while current_path_tile.get_pos() != start_node.get_pos():
-                    path.append(current_path_tile)
-                    current_path_tile = current_path_tile.get_connections()
-
-                return path
-
-            for neighbor_pos in current.neighbors():
-                neighbor = self.get_node(neighbor_pos)
-                if neighbor.walkable() and neighbor not in processed:
+            for neighbor_pos in current.neighbors:
+                neighbor: Node = self.get_node(neighbor_pos)
+                if neighbor.walkable and neighbor not in processed:
                     in_search = neighbor in to_search
 
-                    cost_to_neighbor = current.G + current.get_distance(neighbor.get_pos())
+                    cost_to_neighbor = current.g + current.get_distance(neighbor)
 
-                    if not in_search or cost_to_neighbor < neighbor.G:
-                        neighbor.set_g(cost_to_neighbor)
-                        neighbor.set_connection(current)
+                    if not in_search or cost_to_neighbor < neighbor.g:
+                        neighbor.g = cost_to_neighbor
+                        neighbor.connection = current
 
                         if not in_search:
-                            neighbor.set_h(neighbor.get_distance(end_node.get_pos()))
+                            neighbor.h = neighbor.get_distance(end_node)
                             to_search.append(neighbor)
 
                     if step_callback:
-                        step_callback(neighbor.get_pos(), "neighbor")
+                        step_callback(neighbor.pos, "neighbor")
 
             if step_callback:
-                step_callback(current.get_pos(), "processed")
+                step_callback(current.pos, "processed")
 
         return None

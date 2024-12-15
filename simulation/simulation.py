@@ -58,7 +58,7 @@ class Simulation:
                             path = planner.plan(step_callback=self.update_realtime)
                             if path:
                                 print("Planned path:")
-                                [print(node.get_pos(), end=", ") for node in path]
+                                [print(node.pos, end=", ") for node in path]
                                 self.render_path(path)
                                 self.render_pos()
                             else:
@@ -82,7 +82,6 @@ class Simulation:
                     mouse_pos = mouse_pos[0] // 10, mouse_pos[1] // 10
                     self.draw_border(mouse_pos)
 
-            # self.render_pos()
             pygame.display.flip()
             self._clock.tick(60)
         pygame.quit()
@@ -129,7 +128,7 @@ class Simulation:
     def render_path(self, path):
         if path:
             for tile in path:
-                x, y = tile.get_pos()
+                x, y = tile.pos
                 self._screen.fill("yellow", (x*10, y*10, 10, 10))
                 pygame.display.flip()
                 time.sleep(0.01)

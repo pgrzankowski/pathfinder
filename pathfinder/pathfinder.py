@@ -15,7 +15,7 @@ class Pathfinder:
                                     self._map_array)
         return self._nodes[pos]
 
-    def plan(self):
+    def plan(self, step_callback=None):
         start_node = self.get_node(self._start_pos)
         end_node = self.get_node(self._end_pos)
         to_search = [start_node]
@@ -54,5 +54,11 @@ class Pathfinder:
                         if not in_search:
                             neighbor.set_h(neighbor.get_distance(end_node.get_pos()))
                             to_search.append(neighbor)
+
+                    if step_callback:
+                        step_callback(neighbor.get_pos(), "neighbor")
+
+            if step_callback:
+                step_callback(current.get_pos(), "processed")
 
         return None

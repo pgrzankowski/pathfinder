@@ -55,7 +55,7 @@ class Simulation:
                             planner = Pathfinder(self._map_array,
                                                   self._start_pos,
                                                   self._end_pos)
-                            path = planner.plan()
+                            path = planner.plan(step_callback=self.update_realtime)
                             if path:
                                 print("Planned path:")
                                 [print(node.get_pos(), end=", ") for node in path]
@@ -82,6 +82,7 @@ class Simulation:
                     mouse_pos = mouse_pos[0] // 10, mouse_pos[1] // 10
                     self.draw_border(mouse_pos)
 
+            # self.render_pos()
             pygame.display.flip()
             self._clock.tick(60)
         pygame.quit()
@@ -134,3 +135,11 @@ class Simulation:
                 time.sleep(0.01)
         else:
             print("Path from START to END is not possible")
+
+    def update_realtime(self, pos, node_type):
+        x, y = pos
+        color = "blue" if node_type == "neighbor" else "purple"
+        self._screen.fill(color, (x*10, y*10, 10, 10))
+        self.render_pos()
+        pygame.display.flip()
+        time.sleep(0.001)
